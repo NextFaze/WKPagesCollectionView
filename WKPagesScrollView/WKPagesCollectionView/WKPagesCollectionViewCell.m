@@ -133,7 +133,8 @@
 }
 -(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
     if (self.showingState==WKPagesCollectionViewCellShowingStateNormal){
-        if (scrollView.contentOffset.x>=90.0f){
+        CGFloat slideDistance = MIN([[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height) / 6;
+        if (scrollView.contentOffset.x >= slideDistance){
             NSIndexPath* indexPath=[self.collectionView indexPathForCell:self];
             NSLog(@"delete cell at %ld",(long)indexPath.row);
             //self.alpha=0.0f;
