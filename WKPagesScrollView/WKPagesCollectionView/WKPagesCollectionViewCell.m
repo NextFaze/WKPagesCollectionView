@@ -14,7 +14,6 @@
 
 @property (nonatomic, strong) UITapGestureRecognizer *tapGestureRecognizer;
 @property (nonatomic, strong) UIScrollView *scrollView;
-@property (nonatomic, strong) WKCloseButton *closeButton;
 
 @end
 
@@ -51,8 +50,8 @@
         self.tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureRecognized:)];
         [self.scrollView addGestureRecognizer:self.tapGestureRecognizer];
         
-        self.closeButton = [[WKCloseButton alloc] initWithFrame:CGRectMake(0.0, 0.0, CloseButtonWidth, CloseButtonHeight)];
-        [self.closeButton addTarget:self action:@selector(closeButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+        self.closeButton = [[WKCloseButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 44.0, 44.0)];
+        [self.closeButton addTarget:self action:@selector(closeButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
         [self.scrollView addSubview:self.closeButton];
     }
     

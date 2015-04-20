@@ -22,7 +22,6 @@
 
 - (void)drawCloseButton
 {
-    self.backgroundColor = [UIColor clearColor];
     CGFloat xOffset = 12;
     CGFloat yOffset = 15;
     CGFloat width = 11;
