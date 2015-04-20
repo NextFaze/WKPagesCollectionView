@@ -68,20 +68,21 @@
 
 - (void)tapGestureRecognized:(UITapGestureRecognizer*)tapGesture
 {
-    NSIndexPath *indexPath = [self.collectionView indexPathForCell:self];
-    [(WKPagesCollectionView *)self.collectionView showCellToHighLightAtIndexPath:indexPath completion:^(BOOL finished) {
-        NSLog(@"highlight completed");
-    }];
+    if ([self.delegate respondsToSelector:@selector(pagesCollectionViewCellTapped:)]) {
+        [self.delegate pagesCollectionViewCellTapped:self];
+    }
 }
 
--(void) closeButtonPressed:(id)sender
+- (void)closeButtonTapped:(id)sender
 {
-    [self removeCurrentCell];
-    
+    if ([self.delegate respondsToSelector:@selector(pagesCollectionViewCellTappedClose:)]) {
+        [self.delegate pagesCollectionViewCellTappedClose:self];
+    }
 }
 
 #pragma mark -
 
+#warning this method should be reviewed - the transform/layout code can be handled by the collection view layout instead of the cell itself
 - (void)setState:(WKPagesCollectionViewCellState)state
 {
     if (_state == state)
@@ -89,19 +90,19 @@
     
     _state = state;
     
-    WKPagesCollectionViewFlowLayout *collectionLayout = (WKPagesCollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat pageHeight=collectionLayout.pageHeight;
-    CGFloat topMargin=[(WKPagesCollectionView*)self.collectionView topOffScreenMargin];
+    CGFloat pageHeight = [self.delegate pageHeightForPagesCollectionViewCell:self];
     
     switch (state) {
         case WKPagesCollectionViewCellStateHightlight: {
             self.normalTransform = self.layer.transform;
             _scrollView.scrollEnabled = NO;
             _closeButton.hidden = YES;
-            NSIndexPath* indexPath = [self.collectionView indexPathForCell:self];
-            CGFloat moveY = self.collectionView.contentOffset.y - (WKPagesCollectionViewPageSpacing)*indexPath.row + topMargin;
+            NSIndexPath* indexPath = [self.delegate indexPathForPagesCollectionViewCell:self];
+            CGPoint contentOffset = [self.delegate contentOffsetForPagesCollectionViewCell:self];
+            CGFloat moveY = contentOffset.y - (WKPagesCollectionViewPageSpacing)*indexPath.row;
             CATransform3D moveTransform = CATransform3DMakeTranslation(0.0, moveY, 0.0);
             self.layer.transform = moveTransform;
+
         }
             break;
         case WKPagesCollectionViewCellStateBackToTop: {
@@ -109,7 +110,7 @@
             _scrollView.scrollEnabled = NO;
             _closeButton.hidden = NO;
             CATransform3D rotateTransform = WKFlipCATransform3DPerspectSimpleWithRotate(HighLightRotateAngle);
-            CATransform3D moveTransform = CATransform3DMakeTranslation(0, -1*pageHeight - topMargin, 0.0);
+            CATransform3D moveTransform = CATransform3DMakeTranslation(0, -1*pageHeight, 0.0);
             self.layer.transform=CATransform3DConcat(rotateTransform, moveTransform);
         }
             break;
@@ -118,7 +119,7 @@
             _scrollView.scrollEnabled = NO;
             _closeButton.hidden = NO;
             CATransform3D rotateTransform = WKFlipCATransform3DPerspectSimpleWithRotate(HighLightRotateAngle);
-            CATransform3D moveTransform = CATransform3DMakeTranslation(0.0, pageHeight + topMargin, 0.0);
+            CATransform3D moveTransform = CATransform3DMakeTranslation(0.0, pageHeight, 0.0);
             self.layer.transform = CATransform3DConcat(rotateTransform, moveTransform);
         }
             break;
@@ -131,21 +132,6 @@
         default:
             break;
     }
-}
-
-- (void)removeCurrentCell
-{
-    NSIndexPath* indexPath = [self.collectionView indexPathForCell:self];
-    NSLog(@"delete cell at %ld",(long)indexPath.row);
-    //Delete data
-    id<WKPagesCollectionViewDataSource> pagesDataSource=(id<WKPagesCollectionViewDataSource>)self.collectionView.dataSource;
-    [pagesDataSource collectionView:(WKPagesCollectionView*)self.collectionView willRemoveCellAtIndexPath:indexPath];
-    //Animation
-    [self.collectionView performBatchUpdates:^{
-        [self.collectionView deleteItemsAtIndexPaths:@[indexPath,]];
-    } completion:^(BOOL finished) {
-        
-    }];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -165,7 +151,7 @@
     if (self.state == WKPagesCollectionViewCellStateNormal) {
         CGFloat slideDistance = scrollView.frame.size.width / 6;
         if (scrollView.contentOffset.x >= slideDistance) {
-            [self removeCurrentCell];
+            [self closeButtonTapped:nil];
         }
     }
 }

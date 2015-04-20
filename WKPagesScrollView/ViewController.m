@@ -10,7 +10,7 @@
 
 static NSString *CellReuseIdentifier = @"CellReuseIdentifier";
 
-@interface ViewController ()<WKPagesCollectionViewDataSource,WKPagesCollectionViewDelegate>
+@interface ViewController () <WKPagesCollectionViewDataSource, WKPagesCollectionViewDelegate>
 
 @property (nonatomic, strong) WKPagesCollectionView *collectionView;
 @property (nonatomic, strong) NSMutableArray *items;
@@ -29,9 +29,14 @@ static NSString *CellReuseIdentifier = @"CellReuseIdentifier";
         [self.items addObject:[NSString stringWithFormat:@"button %lu",(unsigned long)a]];
     }
     
-    self.collectionView = [[WKPagesCollectionView alloc] initWithFrame:self.view.bounds];
-    self.collectionView.dataSource=self;
-    self.collectionView.delegate=self;
+    WKPagesCollectionViewFlowLayout *flowLayout = [[WKPagesCollectionViewFlowLayout alloc] init];
+    flowLayout.itemSize = self.view.frame.size;
+    
+    CGFloat topExtensionLength = 120.0;
+    CGRect frame = CGRectMake(0.0, -topExtensionLength, self.view.frame.size.width, self.view.frame.size.height + topExtensionLength);
+    self.collectionView = [[WKPagesCollectionView alloc] initWithFrame:frame collectionViewLayout:flowLayout];
+    self.collectionView.dataSource = self;
+    self.collectionView.delegate = self;
     [self.collectionView registerClass:[WKPagesCollectionViewCell class] forCellWithReuseIdentifier:CellReuseIdentifier];
     [self.view addSubview:self.collectionView];
     self.collectionView.maskShow = YES;
@@ -83,12 +88,12 @@ static NSString *CellReuseIdentifier = @"CellReuseIdentifier";
     return self.items.count;
 }
 
-- (UICollectionViewCell*)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     WKPagesCollectionViewCell *cell = (WKPagesCollectionViewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:CellReuseIdentifier forIndexPath:indexPath];
-    cell.collectionView = collectionView;
+    cell.delegate = (WKPagesCollectionView *)collectionView;
     
-    UIImageView* imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"image-0"]];
+    UIImageView* imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"image-0"]];
     imageView.frame = self.view.bounds;
     [cell.cellContentView addSubview:imageView];
     

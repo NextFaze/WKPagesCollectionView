@@ -13,8 +13,10 @@
 @class WKPagesCollectionView;
 
 @protocol WKPagesCollectionViewDataSource <UICollectionViewDataSource>
-///When you delete a cell is used to delete data
+
+@optional
 -(void)collectionView:(WKPagesCollectionView *)collectionView willRemoveCellAtIndexPath:(NSIndexPath *)indexPath;
+-(void)collectionView:(WKPagesCollectionView *)collectionView didRemoveCellAtIndexPath:(NSIndexPath *)indexPath;
 ///Called when additional data
 -(void)willAppendItemInCollectionView:(WKPagesCollectionView *)collectionView;
 
@@ -30,13 +32,12 @@
 
 @end
 
-@interface WKPagesCollectionView : UICollectionView
+@interface WKPagesCollectionView : UICollectionView <WKPagesCollectionViewCellDelegate>
 
 @property (nonatomic, assign) BOOL canRemove;
 @property (nonatomic, assign) BOOL maskShow;
 @property (readonly, nonatomic, assign) BOOL isHighLight;
 @property (nonatomic, assign) BOOL isAddingNewPage;
-@property (nonatomic, assign) CGFloat topOffScreenMargin;
 @property (nonatomic, assign) CGFloat highLightAnimationDuration;
 @property (nonatomic, assign) CGFloat dismisalAnimationDuration;
 

@@ -8,9 +8,7 @@
 
 #import "WKPagesCollectionView.h"
 
-CGFloat const TOP_OFFSCREEN_MARGIN = 120;
-
-@interface WKPagesCollectionView ()
+@interface WKPagesCollectionView () 
 
 @property (nonatomic, strong) UIImageView *maskImageView;
 
@@ -18,30 +16,24 @@ CGFloat const TOP_OFFSCREEN_MARGIN = 120;
 
 @implementation WKPagesCollectionView
 
-- (id)initWithFrame:(CGRect)frame
+- (instancetype)initWithFrame:(CGRect)frame
 {
-    WKPagesCollectionViewFlowLayout *flowLayout=[[WKPagesCollectionViewFlowLayout alloc ] init];
-    flowLayout.itemSize = [UIScreen mainScreen].bounds.size;
+    WKPagesCollectionViewFlowLayout *flowLayout = [[WKPagesCollectionViewFlowLayout alloc] init];
+    flowLayout.itemSize = frame.size;
     
-    CGRect realFrame = CGRectMake(frame.origin.x, frame.origin.y-self.topOffScreenMargin,
-                                  frame.size.width, frame.size.height + self.topOffScreenMargin);
-    
-    self = [super initWithFrame:realFrame collectionViewLayout:flowLayout];
+    return [self initWithFrame:frame collectionViewLayout:flowLayout];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout
+{
+    self = [super initWithFrame:frame collectionViewLayout:layout];
     if (self) {
-        self.contentInset = UIEdgeInsetsMake(20.0, 0.0, 0.0, 0.0);
+        self.contentInset = UIEdgeInsetsMake(0.0, 0.0, 0.0, 0.0);
         self.highLightAnimationDuration = 0.3;
         self.dismisalAnimationDuration = 0.3;
     }
     
     return self;
-}
-
-- (CGFloat)topOffScreenMargin
-{
-    if (!_topOffScreenMargin) {
-        _topOffScreenMargin = TOP_OFFSCREEN_MARGIN;
-    }
-    return _topOffScreenMargin;
 }
 
 - (void)setHidden:(BOOL)hidden
@@ -123,9 +115,9 @@ CGFloat const TOP_OFFSCREEN_MARGIN = 120;
     }
 
     BOOL noScroll = NO;
-    NSArray* visibleIndexPaths=[self indexPathsForVisibleItems];
-    for (NSIndexPath* indexPath in visibleIndexPaths) {
-        if (indexPath.row==indexPath.row){
+    NSArray* visibleIndexPaths = [self indexPathsForVisibleItems];
+    for (NSIndexPath *visibleIndexPath in visibleIndexPaths) {
+        if (indexPath.row == visibleIndexPath.row){
             noScroll = YES;
         }
     }
@@ -142,16 +134,16 @@ CGFloat const TOP_OFFSCREEN_MARGIN = 120;
         self.scrollEnabled = NO;
         [UIView animateWithDuration:self.highLightAnimationDuration delay:0.0f options:UIViewAnimationOptionCurveEaseOut animations:^{
             [self.visibleCells enumerateObjectsUsingBlock:^(WKPagesCollectionViewCell* cell, NSUInteger idx, BOOL *stop) {
-                NSIndexPath* visibleIndexPath=[self indexPathForCell:cell];
-                if (visibleIndexPath.row==indexPath.row){
-                    cell.state=WKPagesCollectionViewCellStateHightlight;
+                NSIndexPath* visibleIndexPath = [self indexPathForCell:cell];
+                if (visibleIndexPath.row == indexPath.row){
+                    cell.state = WKPagesCollectionViewCellStateHightlight;
                     
-                } else if (visibleIndexPath.row<indexPath.row) {
-                    cell.state=WKPagesCollectionViewCellStateBackToTop;
+                } else if (visibleIndexPath.row < indexPath.row) {
+                    cell.state = WKPagesCollectionViewCellStateBackToTop;
                     
-                } else if (visibleIndexPath.row>indexPath.row) {
+                } else if (visibleIndexPath.row > indexPath.row) {
                     NSLog(@"indexPath:%ld,visibleIndexPath:%ld",(long)indexPath.row,(long)visibleIndexPath.row);
-                    cell.state=WKPagesCollectionViewCellStateBackToBottom;
+                    cell.state = WKPagesCollectionViewCellStateBackToBottom;
                     
                 } else {
                     cell.state = WKPagesCollectionViewCellStateNormal;
@@ -264,7 +256,10 @@ CGFloat const TOP_OFFSCREEN_MARGIN = 120;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         ///Add Data
-        [(id<WKPagesCollectionViewDataSource>)self.dataSource willAppendItemInCollectionView:self];
+        if ([self.dataSource respondsToSelector:@selector(willAppendItemInCollectionView:)]) {
+            [(id<WKPagesCollectionViewDataSource>)self.dataSource willAppendItemInCollectionView:self];
+        }
+
         NSInteger lastRow = total;
         NSIndexPath *insertIndexPath=[NSIndexPath indexPathForItem:lastRow inSection:0];
         [self performBatchUpdates:^{
@@ -297,6 +292,52 @@ CGFloat const TOP_OFFSCREEN_MARGIN = 120;
         }
     }
     return view;
+}
+
+#pragma mark - WKPagesCollectionViewCellDelegate
+
+- (CGPoint)contentOffsetForPagesCollectionViewCell:(WKPagesCollectionViewCell *)cell
+{
+    return self.contentOffset;
+}
+
+- (NSIndexPath *)indexPathForPagesCollectionViewCell:(WKPagesCollectionViewCell *)cell
+{
+    return [self indexPathForCell:cell];
+}
+
+- (CGFloat)pageHeightForPagesCollectionViewCell:(WKPagesCollectionViewCell *)cell
+{
+    WKPagesCollectionViewFlowLayout *collectionLayout = (WKPagesCollectionViewFlowLayout*)self.collectionViewLayout;
+    return collectionLayout.pageHeight;
+}
+
+- (void)pagesCollectionViewCellTapped:(WKPagesCollectionViewCell *)cell
+{
+    NSIndexPath *indexPath = [self indexPathForCell:cell];
+    [self showCellToHighLightAtIndexPath:indexPath completion:^(BOOL finished) {
+        NSLog(@"highlight completed");
+    }];
+}
+
+- (void)pagesCollectionViewCellTappedClose:(WKPagesCollectionViewCell *)cell
+{
+    NSIndexPath* indexPath = [self indexPathForCell:cell];
+    NSLog(@"delete cell at %ld",(long)indexPath.row);
+    //Delete data
+    id<WKPagesCollectionViewDataSource> pagesDataSource = (id<WKPagesCollectionViewDataSource>)self.dataSource;
+    if ([pagesDataSource respondsToSelector:@selector(collectionView:willRemoveCellAtIndexPath:)]) {
+        [pagesDataSource collectionView:self willRemoveCellAtIndexPath:indexPath];
+    }
+
+    //Animation
+    [self performBatchUpdates:^{
+        [self deleteItemsAtIndexPaths:@[indexPath]];
+    } completion:^(BOOL finished) {
+        if ([pagesDataSource respondsToSelector:@selector(collectionView:didRemoveCellAtIndexPath:)]) {
+            [pagesDataSource collectionView:self didRemoveCellAtIndexPath:indexPath];
+        }
+    }];
 }
 
 @end
