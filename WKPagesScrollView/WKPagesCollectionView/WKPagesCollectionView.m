@@ -191,7 +191,7 @@
         }
     }
     if (!noScroll){
-        [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:YES];
+        [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
     }
 
     double delayInSeconds = 0.01f;
