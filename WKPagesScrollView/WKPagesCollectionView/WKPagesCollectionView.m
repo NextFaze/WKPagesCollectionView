@@ -130,7 +130,7 @@
         }
     }
     if (!noScroll){
-        [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredVertically animated:YES];
+        [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:YES];
     }
     
     double delayInSeconds = 0.3f;
@@ -181,6 +181,17 @@
 
     if (_isHighLight){
         return;
+    }
+    
+    BOOL noScroll = NO;
+    NSArray* visibleIndexPaths = [self indexPathsForVisibleItems];
+    for (NSIndexPath *visibleIndexPath in visibleIndexPaths) {
+        if (indexPath.row == visibleIndexPath.row){
+            noScroll = YES;
+        }
+    }
+    if (!noScroll){
+        [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:YES];
     }
 
     double delayInSeconds = 0.01f;
