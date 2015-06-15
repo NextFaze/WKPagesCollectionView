@@ -91,6 +91,7 @@
     _state = state;
     
     CGFloat pageHeight = [self.delegate pageHeightForPagesCollectionViewCell:self];
+    CGFloat topMargin = [WKPagesCollectionView topOffScreenMargin];
     
     switch (state) {
         case WKPagesCollectionViewCellStateHightlight: {
@@ -99,7 +100,7 @@
             _closeButton.hidden = YES;
             NSIndexPath* indexPath = [self.delegate indexPathForPagesCollectionViewCell:self];
             CGPoint contentOffset = [self.delegate contentOffsetForPagesCollectionViewCell:self];
-            CGFloat moveY = contentOffset.y - (WKPagesCollectionViewPageSpacing)*indexPath.row;
+            CGFloat moveY = contentOffset.y - (WKPagesCollectionViewPageSpacing) * indexPath.row + topMargin;
             CATransform3D moveTransform = CATransform3DMakeTranslation(0.0, moveY, 0.0);
             self.layer.transform = moveTransform;
 
@@ -110,7 +111,7 @@
             _scrollView.scrollEnabled = NO;
             _closeButton.hidden = NO;
             CATransform3D rotateTransform = WKFlipCATransform3DPerspectSimpleWithRotate(HighLightRotateAngle);
-            CATransform3D moveTransform = CATransform3DMakeTranslation(0, -1*pageHeight, 0.0);
+            CATransform3D moveTransform = CATransform3DMakeTranslation(0, -1*pageHeight-topMargin, 0.0);
             self.layer.transform=CATransform3DConcat(rotateTransform, moveTransform);
         }
             break;
@@ -119,7 +120,7 @@
             _scrollView.scrollEnabled = NO;
             _closeButton.hidden = NO;
             CATransform3D rotateTransform = WKFlipCATransform3DPerspectSimpleWithRotate(HighLightRotateAngle);
-            CATransform3D moveTransform = CATransform3DMakeTranslation(0.0, pageHeight, 0.0);
+            CATransform3D moveTransform = CATransform3DMakeTranslation(0.0, pageHeight+topMargin, 0.0);
             self.layer.transform = CATransform3DConcat(rotateTransform, moveTransform);
         }
             break;

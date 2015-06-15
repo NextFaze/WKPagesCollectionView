@@ -16,12 +16,20 @@
 
 @implementation WKPagesCollectionView
 
++ (CGFloat) topOffScreenMargin
+{
+    return 120;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
-    WKPagesCollectionViewFlowLayout *flowLayout = [[WKPagesCollectionViewFlowLayout alloc] init];
-    flowLayout.itemSize = frame.size;
+    CGRect realFrame = CGRectMake(frame.origin.x, frame.origin.y - [[self class] topOffScreenMargin],
+                                  frame.size.width, frame.size.height + [[self class] topOffScreenMargin]);
     
-    return [self initWithFrame:frame collectionViewLayout:flowLayout];
+    WKPagesCollectionViewFlowLayout *flowLayout = [[WKPagesCollectionViewFlowLayout alloc] init];
+    flowLayout.itemSize = realFrame.size;
+    
+    return [self initWithFrame:realFrame collectionViewLayout:flowLayout];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout

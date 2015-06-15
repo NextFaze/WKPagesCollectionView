@@ -41,6 +41,8 @@
 @property (nonatomic, assign) CGFloat highLightAnimationDuration;
 @property (nonatomic, assign) CGFloat dismisalAnimationDuration;
 
++ (CGFloat) topOffScreenMargin;
+
 -(void)showCellToHighLightAtIndexPath:(NSIndexPath*)indexPath completion:(void(^)(BOOL finished))completion;
 ///No animation display state, there will be didShowCellToHightLight callback
 -(void)showCellToHighLightAtIndexPath:(NSIndexPath*)indexPath;
